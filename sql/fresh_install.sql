@@ -1,0 +1,53 @@
+CREATE DATABASE IF NOT EXISTS repairshop_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE repairshop_db;
+
+CREATE TABLE IF NOT EXISTS users (
+  user_id INT AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(50) NOT NULL,
+  last_name VARCHAR(50) NOT NULL,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  email VARCHAR(120) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS customers (
+  customer_id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50),
+  first_name VARCHAR(50) NOT NULL,
+  last_name VARCHAR(50) NOT NULL,
+  date_of_birth VARCHAR(50),
+  contact_number VARCHAR(50),
+  date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  added_by INT NULL,
+  updated_by INT NULL,
+  last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_customer_added FOREIGN KEY (added_by) REFERENCES users(user_id) ON DELETE SET NULL,
+  CONSTRAINT fk_customer_updated FOREIGN KEY (updated_by) REFERENCES users(user_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS devices (
+  device_id INT AUTO_INCREMENT PRIMARY KEY,
+  device_name VARCHAR(50) NOT NULL,
+  issue VARCHAR(100) NOT NULL,
+  customer_id INT NOT NULL,
+  date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  added_by INT NULL,
+  updated_by INT NULL,
+  last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_device_customer FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE,
+  CONSTRAINT fk_device_added FOREIGN KEY (added_by) REFERENCES users(user_id) ON DELETE SET NULL,
+  CONSTRAINT fk_device_updated FOREIGN KEY (updated_by) REFERENCES users(user_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  log_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NULL,
+  username VARCHAR(50) NOT NULL,
+  entity_type VARCHAR(25) NOT NULL,
+  record_id INT NOT NULL,
+  action_type ENUM('INSERT','UPDATE','DELETE') NOT NULL,
+  description TEXT,
+  action_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
